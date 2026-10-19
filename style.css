@@ -1,0 +1,51 @@
+.todo-list-container{
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color:#333;
+        background-color: #f7f8fc ;
+}
+.header{
+        background-color: #3f51b5;
+        color:white;
+}
+.input{
+        background-color: White;
+        color: #333;
+        border-style:solid;
+        border-color: #ccc;
+}
+#add-task-btn{
+        background-color: #4caf50;
+        color: White
+}
+#add-task-btn:hover{
+        background-color: #388e3c;
+}
+#tasks-container{
+        background-color: #fffefe;
+}
+.task-container{
+        border-bottom:1px solid #ddd;
+}
+.edit-btn{
+        background-color: #ffca28;
+        color: #333;
+}
+.edit-btn:hover{
+        background-color:#fbc02d ;
+}
+.delete-btn{
+        background-color: #f44336;
+        color:white;
+}
+.delete-btn:hover{
+        background-color: #d32f2f;
+}
+.task-date{
+        color:#0a0000;
+}
+.task-time{
+        color:#0a0000;
+}
+h2,h3{
+        color:#3f51b5;
+}
