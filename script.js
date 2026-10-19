@@ -4,9 +4,27 @@ const taskDateInput = document.getElementById('task-date-input');
 const taskTimeInput = document.getElementById('task-time-input');
 const addTaskBtn = document.getElementById('add-task-btn');
 const tasksContainer = document.getElementById('tasks-container');
+const filterTasksInput=document.getElementById('filter-tasks-input');
 
 let tasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+let dueTasks;
+let todayTasks;
+let upcomingTasks;
+let filteredTasks= tasks;
 let editingTaskId = null;
+const currentDate=new Date();
+currentDate.setHours(0,0,0,0);
+
+const filterTasks=() => {
+        const inputText=filterTasksInput.value.toLowerCase();
+        filteredTasks=tasks.filter(task => {
+                const taskText=task.text.toLowerCase();
+                return taskText.includes(inputText);
+        });
+        loadTasks();
+}
+
+filterTasksInput.addEventListener('input',filterTasks);
 
 const setLocalStorage=() => {
         localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -33,13 +51,14 @@ const createTaskElement = (taskId, taskText, taskDate, taskTime) => {
 
         const taskTimeHolder=document.createElement('span');
         taskTimeHolder.classList.add('task-time');
-        taskTimeHolder.textContent=` ${time[0]%12}:${time[1]} ${time[0]>=12?'PM':'AM'}`;
+        taskTimeHolder.textContent=` ${time[0]%12||12}:${time[1]} ${time[0]>=12?'PM':'AM'}`;
 
         taskDetails.appendChild(taskDescription);
         taskDetails.appendChild(taskTimeHolder);
 
         const editBtn = document.createElement('button');
         editBtn.classList.add('edit-btn');
+        editBtn.type='button';
         editBtn.textContent = 'Edit';
         editBtn.addEventListener('click', () => {
                 taskInput.value = taskText;
@@ -49,11 +68,11 @@ const createTaskElement = (taskId, taskText, taskDate, taskTime) => {
 
         const deleteBtn = document.createElement('button');
         deleteBtn.classList.add('delete-btn');
+        deleteBtn.type='button';
         deleteBtn.textContent = 'Delete';
         deleteBtn.addEventListener('click', () => {
-                taskContainer.remove();
-                tasks=tasks.filter((task) => task.id!==taskId);
-                setLocalStorage();
+                tasks=tasks.filter((task) => task.id !==taskId);
+                filterTasks();
         });
 
 
@@ -61,14 +80,74 @@ const createTaskElement = (taskId, taskText, taskDate, taskTime) => {
         taskContainer.appendChild(taskDetails);
         taskContainer.appendChild(editBtn);
         taskContainer.appendChild(deleteBtn);
-        tasksContainer.appendChild(taskContainer);
+        return taskContainer;
 
 }
 
+const loadDueTasks=() => {
+        if(dueTasks.length>0 || todayTasks.length>0){
+                const dueTasksContainer=document.createElement('div');
+                dueTasksContainer.setAttribute('id','due-tasks-container');
+                const dueHeading=document.createElement('h2');
+                dueHeading.textContent='Due Tasks';
+                dueTasksContainer.appendChild(dueHeading);
+                
+                dueTasks.forEach(task => {
+                        const taskContainer=createTaskElement(task.id,task.text,task.date,task.time);
+                        dueTasksContainer.appendChild(taskContainer);
+                });
+                if(todayTasks.length>0){
+                        const todayTasksContainer=document.createElement('div');
+                        todayTasksContainer.setAttribute('id','today-tasks-container');
+                        const todayHeading=document.createElement('h3');
+                        todayHeading.textContent='Today';
+                        todayTasksContainer.appendChild(todayHeading);
+                        todayTasks.forEach((task) => {
+                                const taskContainer=createTaskElement(task.id,task.text,task.date,task.time);
+                                taskContainer.querySelector('.task-date').remove();
+                                todayTasksContainer.appendChild(taskContainer);
+                        });
+                        dueTasksContainer.appendChild(todayTasksContainer);
+                }
+                tasksContainer.appendChild(dueTasksContainer);
+        }
+}
+
+const loadUpcomingTasks=() => {
+        if(upcomingTasks.length>0){
+                const upcomingTasksContainer=document.createElement('div');
+                upcomingTasksContainer.setAttribute('id','upcoming-tasks-container');
+                const upcomingHeading=document.createElement('h2');
+                upcomingHeading.textContent='Upcoming Tasks';
+                upcomingTasksContainer.appendChild(upcomingHeading);
+                upcomingTasks.forEach((task) => {
+                        const taskContainer=createTaskElement(task.id,task.text,task.date,task.time);
+                        upcomingTasksContainer.appendChild(taskContainer);
+                });
+                tasksContainer.appendChild(upcomingTasksContainer);
+        }
+}
+
 const loadTasks=() => {
-        tasks.forEach(task => {
-                createTaskElement(task.id, task.text, task.date, task.time);
+        tasksContainer.innerHTML='';
+        dueTasks=filteredTasks.filter((task) => {
+                const taskDate=new Date(`${task.date}`);
+                taskDate.setHours(0,0,0,0);
+                return taskDate<currentDate;
         });
+        todayTasks=filteredTasks.filter((task) => {
+                const taskDate=new Date(`${task.date}`);
+                taskDate.setHours(0,0,0,0);
+                return taskDate.getTime()===currentDate.getTime();
+        });
+        upcomingTasks=filteredTasks.filter((task) => {
+                const taskDate=new Date(`${task.date}`);
+                taskDate.setHours(0,0,0,0);
+                return taskDate>currentDate;
+        });
+        setLocalStorage();
+        loadDueTasks();
+        loadUpcomingTasks();
 }
 
 const addTask=() => {
@@ -79,8 +158,7 @@ const addTask=() => {
         const taskId=Date.now();
 
         tasks.push({id: taskId, text: taskText, date: taskDate, time: taskTime});
-        createTaskElement(taskId,taskText, taskDate, taskTime);
-        setLocalStorage();
+        filterTasks();
 
         taskInput.value = '';
         taskDateInput.value = '';
@@ -91,13 +169,10 @@ const addTask=() => {
 const editTask=() => {
         const updatedTaskText = taskInput.value.trim();
         const taskId=editingTaskId;
-        const taskEle=document.getElementById(taskId);
-        const taskDescription=taskEle.querySelector('.task-description');
-        taskDescription.textContent=updatedTaskText;
 
         const editingTask=tasks.find((task) => task.id===taskId);
         editingTask.text=updatedTaskText;
-        setLocalStorage();
+        filterTasks();
 
         addTaskBtn.textContent = 'Add Task';
         taskInput.value='';
