@@ -8,9 +8,8 @@
                 <div class="todo-list-container">
                         <div class="header">
                                 <h1 class="heading">To-Do List</h1>
+                                <input type="text" placeholder="Search tasks..." id="filter-tasks-input" class="input">
                         </div>
-                        
-                        <input type="text" placeholder="Search tasks..." id="filter-tasks-input" class="input">
                         <form id="task-form">
                                 <input type="text" id="task-input" placeholder="Add your task here" class="input">
                                 <input type="date" id="task-date-input" class="input">
@@ -19,6 +18,24 @@
                         </form>
                         <div id="tasks-container"></div>
                 </div>
+                <div id="edit-task-container">
+                        <p id="edit-task-date"></p>
+                        <div class="edit-task-elements">
+                                <input type="text" id="edit-text-input">
+                                <div class="edit-buttons">
+                                        <button id="update-task-btn">Update Task</button>
+                                        <button id="cancel-edit-btn">Cancel</button>
+                                </div>
+                                
+                        </div>
+                </div>
+                <dialog id="dialog-element">
+                        <div class="dialog-content">
+                                <p>Please fill in all fields.</p>
+                                <button id="close-btn">OK</button>
+                        </div>
+                        
+                </dialog>
                 
                 <script src="./script.js"></script>
         </body>
